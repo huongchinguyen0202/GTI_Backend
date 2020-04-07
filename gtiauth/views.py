@@ -8,13 +8,13 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.decorators import api_view
 from gtiauth.models import User
-from gtiauth.UserSerializer import UserSerializer
 import requests
 import json
 
+authy_api = AuthyApiClient(settings.ACCOUNT_SECURITY_API_KEY)
+
 class GtiAuth(View):
 
-    authy_api = AuthyApiClient(settings.ACCOUNT_SECURITY_API_KEY)
     parser_classes = [JSONParser]
 
     @api_view(["POST"])
@@ -40,7 +40,6 @@ class GtiAuth(View):
         
         if response_login.ok:
             user = authenticate(username=request.data['username'], password=request.data['password'])
-            userSerializer = UserSerializer(user)
-            authy_api.phones.verification_start('+84', '374214364' ,via='sms', code_length=6)
+            authy_api.phones.verification_start(user.phone, '+84', via='sms', code_length=6)
 
         return Response(response_login_dict, response_login.status_code)
